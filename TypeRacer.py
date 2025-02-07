@@ -8,16 +8,22 @@ import pyautogui
 class PythonOrgSearch(unittest.TestCase):
 
     def setUp(self):
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Edge()
 
-    def functionality(self, letter):
+    def functionality(self, words):
         wordList = []
 
-        for i in letter:
+        for i in words:
             wordList.append(i.text)
-        
         result = ''.join(wordList)
         return result
+    
+    def checkComma(self, span):
+        for i in span:
+            if ',' in i.text:
+                return ','
+        return ''
+
         
 
     def test_search_in_python_org(self):
@@ -29,10 +35,23 @@ class PythonOrgSearch(unittest.TestCase):
         but.click()
 
         time.sleep(2)
-        t_find = (driver.find_element(By.CLASS_NAME, "timeDisplay")).find_element(By.CLASS_NAME, "time")
-        while str(t_find.text) != "0:00":
-            t_find = (driver.find_element(By.CLASS_NAME, "timeDisplay")).find_element(By.CLASS_NAME, "time")
-            print(t_find.text)
+
+        main_div = input("enter main div: ")
+        
+        div = driver.find_element(By.CLASS_NAME, main_div)
+        
+
+        word_class = input("enter word class: ")
+
+        time.sleep(5)
+        words = driver.find_elements(By.CLASS_NAME, word_class)
+        
+        for i in range(100):
+            
+            span = div.find_elements(By.TAG_NAME, "span")
+            words = driver.find_elements(By.CLASS_NAME, word_class)
+            pyautogui.write(f"{self.functionality(words)}{self.checkComma(span)} ", interval=0)
+
 
         self.assertNotIn("No results found.", driver.page_source)
 
