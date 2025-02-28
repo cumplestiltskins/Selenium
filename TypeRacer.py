@@ -3,9 +3,31 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 import time
-import pyautogui
+import google.generativeai as genai
+import httpx
+import os
+import base64
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+genai.configure(api_key="AIzaSyBi-lF7PEra0qfk-1CKxaLnoEEZGqICY1k")
 
 class PythonOrgSearch(unittest.TestCase):
+
+	def captcha(self, src, driver):
+		print("captcha executed")
+		model = genai.GenerativeModel(model_name="gemini-1.5-pro")
+		image = httpx.get(src)
+		print(src)
+		prompt = "what is the text in this image. be very accurate about the answer and make the answer in a single line"
+		response = model.generate_content([{'mime_type':'image/jpeg', 'data': base64.b64encode(image.content).decode('utf-8')}, prompt])
+		cap = response.text
+		print(cap)	
+
+		textf = driver.find_element(By.CLASS_NAME, "challengeTextArea")
+		for i in cap:
+			textf.send_keys(i)
+		
 
 	def setUp(self):
 		self.driver = webdriver.Edge()
@@ -24,8 +46,6 @@ class PythonOrgSearch(unittest.TestCase):
 				return ','
 		return ''
 
-		
-
 	def test_search_in_python_org(self):
 		driver = self.driver
 		driver.get("https://play.typeracer.com/")
@@ -40,9 +60,7 @@ class PythonOrgSearch(unittest.TestCase):
 		for i in span:
 			if len(i.text) >100 :
 				words = i.text 
-		#main_div = input("enter main div: ")
-		#
-		#div = driver.find_element(By.CLASS_NAME, main_div)y - no
+
 		
 		wp = driver.find_element(By.CLASS_NAME, "txtInput")
 		ss = input()
@@ -52,13 +70,23 @@ class PythonOrgSearch(unittest.TestCase):
 		for i in words:
 			wp.send_keys(i)
 
+		time.sleep(1)
+		but = driver.find_element(By.CLASS_NAME, "gwt-Button")
+		but.click()
+
+		time.sleep(1)
+		src = driver.find_element(By.CLASS_NAME, "challengeImg").get_attribute("src")
+		print(src)
+		self.captcha(src, driver)
 
 		self.assertNotIn("No results found.", driver.page_source)
 
 
 	def tearDown(self):
-		time.sleep(100)
+		time.sleep(60)
 		self.driver.close()
 
 if __name__ == "__main__":
 	unittest.main()
+
+#challengeImg challengeTextArea
